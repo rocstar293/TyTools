@@ -18,7 +18,7 @@ def set_intp(curve):
 	if isBezier(curve):
 		sp_len_list = [s.calc_length() for s in curve.data.splines]
 		max_len = max(sp_len_list)
-		curve.data.resolution_u = math.ceil(max_len)
+		curve.data.resolution_u = math.ceil(max_len)*2
 
 
 def reset_radius(curve):
@@ -58,4 +58,43 @@ def build_ref(coords, ref_type, refobj = None):
 		spline.points[i].co = (x, y, z, 1)
 
 	return refobj
+
+
+def resample(obj, length=0.1, apply=False):
+    
+	resample_mod = [mod for mod in obj.modifiers if mod.name == "Resample"]
 	
+	if len(resample_mod) != 0:
+		return
+
+	geonode = obj.modifiers.new("Resample",'NODES')
+
+	nodes = geonode.node_group.nodes
+	links = geonode.node_group.links
+	initial_link = links[0]
+
+	links.remove(initial_link)
+
+	input_node = nodes[0]
+	output_node = nodes[1]
+
+	resample = nodes.new('GeometryNodeResampleCurve')
+	resample.mode = 'LENGTH'
+
+	resample_geom_input = resample.inputs[0]
+	resample_length_input = resample.inputs[3]
+	resample_output = resample.outputs[0]
+
+	geom_in = input_node.outputs[0]
+	geom_out = output_node.inputs[0]
+
+	links.new(geom_in, resample_geom_input)
+	links.new(resample_output, geom_out)
+
+	resample_length_input.default_value = length
+    
+	if apply:
+		object.set_active(obj)
+		bpy.ops.modifier_apply(obj, geonode)
+
+

@@ -9,6 +9,7 @@ classes = [
 	properties.TY_props,
 	# properties.TY_draw_props,
 	operators.TY_OT_set_ref,
+	operators.TY_OT_apply_ref,
 	operators.TY_OT_build_stripes,
 	operators.TY_OT_ref_editor_modal,
 	panel.TY_PT_profile_tools,

@@ -94,28 +94,40 @@ def new(name='Collection', parent=None, color='', unique=True, unique_parent=Fal
     return collection
 
 
-def set_active_col(collection, layer_col, found=None):
+def hide_col(collection, layer_col, hide=True):
     
-    if found == None:
+    if (layer_col.name == collection.name):
+        layer_col.hide_viewport = hide
     
-        if (layer_col.name == collection.name):
-            found = layer_col
-        
-        for layer in layer_col.children:
-            set_active_col(collection, layer, found)
-        
-    else:
-        bpy.context.view_layer.active_layer_collection = found
+    if len(layer_col.children) == 0:
+        return
+
+    for layer in layer_col.children:
+        hide_col(collection, layer, hide)
 
 
 def verify_ref():
     scene = bpy.context.scene
+    view_layer = bpy.context.view_layer.active_layer_collection
     TY_props = scene.TY_props
 
     if TY_props.ref_col == None:
-            TY_props.ref_col = new(
-		        name= "Reference Lines", 
-			    color= 'yellow')
+        TY_props.ref_col = new(
+		    name= "Reference Lines", 
+			color= 'yellow')
+    
+        hide_col(TY_props.ref_col, view_layer)
+
+def verify_bk():
+    scene = bpy.context.scene
+    view_layer = bpy.context.view_layer.active_layer_collection
+    TY_props = scene.TY_props
+
+    if TY_props.bk_col == None:
+        TY_props.bk_col = new(
+		    name= "Backups", 
+			color= 'green')
+        hide_col(TY_props.bk_col, view_layer)
 
 def update_refs():
 

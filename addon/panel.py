@@ -36,6 +36,7 @@ class TY_PT_profile_tools(Panel):
 
         box.label(text="Settings:")
         box.prop(TY_props, "ref_col")
+        box.prop(TY_props, "bk_col")
         box.prop(TY_props, "set_bevel")
         
         box = layout.box()
@@ -82,6 +83,7 @@ class TY_PT_profile_tools(Panel):
             op_name = "Update Reference"
 
         box.operator("ty.set_ref", text=op_name)
+        box.operator("ty.apply_ref")
 
 
 class TY_PT_camera_tools(Panel):

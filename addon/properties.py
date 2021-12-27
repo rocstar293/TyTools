@@ -15,6 +15,12 @@ class TY_props(PropertyGroup):
 		description= "Collection for new Reference Objects",
 		type= bpy.types.Collection
 	)
+
+	bk_col : PointerProperty(
+		name = "Backups",
+		description = "Collection for backing up applied curve objects",
+		type= bpy.types.Collection
+	)
 	
 	set_bevel : BoolProperty(
 		name= "Bevel to active",

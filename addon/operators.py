@@ -32,6 +32,36 @@ class TY_OT_set_ref(Operator): # create a new reference object
             
         return {'FINISHED'}
 
+
+class TY_OT_apply_ref(Operator):
+    bl_idname = "ty.apply_ref"
+    bl_label = "Apply"
+
+    def invoke(self, context, event):
+        
+        scene = context.scene
+        TY_props = scene.TY_props
+
+        target = object.get_active_selected()
+        bevel_obj = target.data.bevel_object
+
+        collection.verify_bk()
+        
+        copy = object.makecopy(target, TY_props.bk_col)
+        target.data.bevel_object = None
+        
+        curve.set_intp(target)                                                 # configure target path for bevel
+        curve.resample(target, length=.5)
+
+        bpy.ops.object.convert(target='MESH')
+        bpy.ops.object.convert(target='CURVE')
+        curve.bevel_to(target, bevel_obj)
+        bpy.ops.object.convert(target='MESH')
+    
+        return {'FINISHED'}
+        
+
+
 class TY_OT_build_stripes(Operator): # Special op for 
     bl_idname = "ty.build_stripes"
     bl_label = "Build Stripes"
