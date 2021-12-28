@@ -37,7 +37,7 @@ class TY_road(PropertyGroup):
 		default= False
 	)
 
-	def set_coords(self):
+	def coords(self):
 		
 		scale = 0.3048
 
@@ -75,6 +75,7 @@ class TY_road(PropertyGroup):
 
 		return coords
 
+
 class TY_curb(PropertyGroup):
 
 	option_list : EnumProperty(
@@ -101,6 +102,8 @@ class TY_curb(PropertyGroup):
 		default= 0.5,
 		min= .125
 	)
+
+
 class TY_sidewalk(PropertyGroup):
 
 	option_list = [
@@ -120,7 +123,7 @@ class TY_sidewalk(PropertyGroup):
 		min = 0
 	)
 
-	def set_coords(self):
+	def coords(self):
 		
 		scale = 0.3048
 		
@@ -161,7 +164,7 @@ class TY_stripe(PropertyGroup):
 		default = 0.125
 	)
 
-	def set_coords(self):
+	def coords(self):
 		
 		scale = 0.3048
 

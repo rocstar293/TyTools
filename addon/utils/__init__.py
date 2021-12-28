@@ -1,3 +1,3 @@
 import bpy
 
-from . import collection, curve, object
+from . import collection, object, curve

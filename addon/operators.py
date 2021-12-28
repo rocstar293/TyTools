@@ -2,10 +2,10 @@ import bpy
 
 from bpy.types import Operator
 
-from . utils import collection, curve, shader, object
+from . utils import collection, curve, object
+from . import ref
 
-
-class TY_OT_set_ref(Operator): # create a new reference object 
+class TY_OT_set_ref(Operator):
     bl_idname = "ty.set_ref"
     bl_label = "Setup New Reference"
     
@@ -13,27 +13,29 @@ class TY_OT_set_ref(Operator): # create a new reference object
         
         scene = context.scene
         TY_props = scene.TY_props
-        atv_ref_type = TY_props.ref_type
+        prop_reftype = TY_props.ref_type
         
-        target = object.get_active_selected() # set active object as target for bevel_to
-        ref_obj = object.get_ref_obj(target)
+        target = object.get_sel() # set active object as target for bevel_to
+        ref_obj = object.get_ref(target)
         
         collection.verify_ref() # Verify That a reference collection is set; else build one
-        coords = eval(str(f"scene.{scene.TY_props.ref_type}.set_coords()")) # return built coords of selected ref type
-        new_ref = curve.build_ref(coords, atv_ref_type, ref_obj) # build reference object with returned coords
-        
+
+        coords = eval(str(f"scene.{scene.TY_props.ref_type}.coords()")) # return built coords of selected ref type
+        new_ref = ref.build(coords, prop_reftype, ref_obj) # build reference object with returned coords
+
         if target != None and TY_props.set_bevel == True and target.type == 'CURVE': # if target is curve and set bevel is enabled;
             object.reset_rs_transforms(target, rotation= True, scale= True)
             curve.reset_radius(target)
-            curve.set_intp(target)                                                   # configure target path for bevel
-            curve.bevel_to(target, new_ref)
-            object.append_ref_name(target, new_ref)
+            curve.set_intp(target)
+            curve.set_bevel(target, new_ref)
+            object.append_name(target, new_ref.name.split(".")[0])
+            new_ref['ref_type'] = TY_props.ref_type
             target.data.twist_mode = 'Z_UP'
-            
+
         return {'FINISHED'}
 
 
-class TY_OT_apply_ref(Operator):
+class TY_OT_apply_ref(Operator): # Resamples curve, sets backup, and converts to mesh
     bl_idname = "ty.apply_ref"
     bl_label = "Apply"
 
@@ -42,24 +44,30 @@ class TY_OT_apply_ref(Operator):
         scene = context.scene
         TY_props = scene.TY_props
 
-        target = object.get_active_selected()
-        bevel_obj = target.data.bevel_object
+        target = object.get_sel()
 
         collection.verify_bk()
         
-        copy = object.makecopy(target, TY_props.bk_col)
-        target.data.bevel_object = None
-        
-        curve.set_intp(target)                                                 # configure target path for bevel
-        curve.resample(target, length=.5)
-
-        bpy.ops.object.convert(target='MESH')
-        bpy.ops.object.convert(target='CURVE')
-        curve.bevel_to(target, bevel_obj)
-        bpy.ops.object.convert(target='MESH')
+        ref.apply(target)
     
         return {'FINISHED'}
-        
+
+
+class TY_OT_revert(Operator):
+    bl_idname = "ty.revert"
+    bl_label = "Revert"
+
+    def invoke(self, context, event):
+        target = object.get_sel()
+        target_col = target.users_collection[0]
+        backup = target["backup"]
+        name = target.name
+
+        bpy.data.objects.remove(target)
+        object.move(backup, target_col)
+        object.set_active(backup)
+        backup.name = name
+        return {'FINISHED'}
 
 
 class TY_OT_build_stripes(Operator): # Special op for 
@@ -68,19 +76,20 @@ class TY_OT_build_stripes(Operator): # Special op for
 
     def invoke(self, context, event):
         
-        target_col = object.get_active_selected().users_collection[0] # set stripe's target collection to active obj's collection
+        target_col = object.get_sel().users_collection[0] # set stripe's target collection to active obj's collection
         
         scene = context.scene
         TY_props = scene.TY_props
         TY_stripe = scene.TY_stripe
         
-        coords = TY_stripe.set_coords()
-        new_stripe = curve.build_ref(coords, ref_type="TY_stripe")
+        coords = TY_stripe.coords()
+        new_stripe = ref.build(coords, ref_type="TY_stripe")
 
-        target = object.get_active_selected()
+        target = object.get_sel()
         copy = object.makecopy(target, target_col)
-        object.append_ref_name(copy, new_stripe)
+        object.append_name(copy, new_stripe.name)
         copy.data.bevel_object = new_stripe
+        
         return {'FINISHED'}
 
 

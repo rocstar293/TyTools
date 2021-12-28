@@ -3,10 +3,6 @@ import bpy
 from bpy.types import PropertyGroup 
 from bpy.props import PointerProperty, BoolProperty, EnumProperty
 
-from . import handlers
-
-from .utils import collection
-
 
 class TY_props(PropertyGroup):
 	
@@ -36,13 +32,3 @@ class TY_props(PropertyGroup):
 			("TY_sidewalk", "Sidewalk", "")
 		]
 	)
-
-
-# class TY_draw_props(PropertyGroup):
-
-# 	draw_shader : bpy.props.BoolProperty(
-# 		name= "draw overlay",
-# 		description= "Draw Overlay",
-# 		default= False,
-# 		update= handlers.update_draw()
-# 		)

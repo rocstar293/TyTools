@@ -1,6 +1,9 @@
 import bpy
 
+# Getter
+
 def find(name='Collection', parents=False, children=False):
+    
     if parents:
         return [c for c in bpy.data.collections if name in c.children]
 
@@ -39,15 +42,18 @@ def child_of(name='Collection', parent=None):
 
 
 def exists(name='Collection'):
+    
     return bool(find(name))
 
 
 def get(name, default=None):
+    
     if not exists(name):
         return default
 
     return find(name)
 
+# Setter
 
 def new(name='Collection', parent=None, color='', unique=True, unique_parent=False):
     color = color.lower()
@@ -94,6 +100,20 @@ def new(name='Collection', parent=None, color='', unique=True, unique_parent=Fal
     return collection
 
 
+def set_active(collection, layer_col, found=None):
+    
+    if found == None:
+    
+        if (layer_col.name == collection.name):
+            found = layer_col
+        
+        for layer in layer_col.children:
+            set_active(collection, layer, found)
+        
+    else:
+        bpy.context.view_layer.active_layer_collection = found
+
+
 def hide_col(collection, layer_col, hide=True):
     
     if (layer_col.name == collection.name):
@@ -116,7 +136,8 @@ def verify_ref():
 		    name= "Reference Lines", 
 			color= 'yellow')
     
-        hide_col(TY_props.ref_col, view_layer)
+    hide_col(TY_props.ref_col, view_layer)
+
 
 def verify_bk():
     scene = bpy.context.scene
@@ -127,19 +148,6 @@ def verify_bk():
         TY_props.bk_col = new(
 		    name= "Backups", 
 			color= 'green')
-        hide_col(TY_props.bk_col, view_layer)
-
-def update_refs():
-
-    items = []
-
-    scene = bpy.context.scene
-    TY_props = scene.TY_props
-        
-    if scene.TY_props.ref_col != None:
-        for i, ob in enumerate(list(TY_props.ref_col.objects)):
-            print(f"Tracking: {ob.name}")
-            add_obj = (str(i), ob.name, "")
-            items.append(add_obj)  
     
-    return items
+    hide_col(TY_props.bk_col, view_layer)    
+
