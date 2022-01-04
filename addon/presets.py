@@ -8,6 +8,7 @@ class TY_road(PropertyGroup):
 		"lane_width",
 		"lane_cnt",
 		"shoulder_width",
+		"toggle_gutter",
 		"toggle_curb",
 		"toggle_stripes"
 	]
@@ -28,43 +29,41 @@ class TY_road(PropertyGroup):
 	)		
 
 	toggle_curb : BoolProperty(
-		name= "Create Curb",
+		name= "Curb",
 		default= False
+	)
+
+	toggle_gutter : BoolProperty(
+		name = "Gutter",
+		default = False
 	)
 	
 	toggle_stripes : BoolProperty(
-		name= "Create Stripes",
+		name= "Stripes",
 		default= False
 	)
 
 	def coords(self):
-		
+		scene = bpy.context.scene
+
 		scale = 0.3048
 
 		lane_width = self.lane_width * scale
 		shoulder_width = self.shoulder_width * scale
-		curb_height = 0.5 * scale
-		curb_width = 0.5 * scale
 		lane_cnt = self.lane_cnt
 		toggle_curb = self.toggle_curb
 		
 		road_top = 0
 		extreme_x = lane_width * lane_cnt / 2 + shoulder_width
-		shoulder_x = extreme_x - shoulder_width
 		curb_s = []
 		curb_f = []
 		
 		if toggle_curb == True:
-			curb_s = [
-				(-extreme_x - (2 * curb_width), road_top + curb_height, 0),
-				(-extreme_x - curb_width, road_top + curb_height, 0),
-				(-extreme_x - curb_width, road_top, 0)]
-
-			curb_f = [
-				(extreme_x + curb_width, road_top, 0),
-				(extreme_x + curb_width, road_top + curb_height, 0),
-				(extreme_x + (2 * curb_width), road_top + curb_height, 0)
-		]
+			curb = scene.TY_curb.option_list
+			curb_coords = eval(f"scene.TY_curb.{curb}_coords({extreme_x})")
+			
+			curb_s = curb_coords[0]
+			curb_f = curb_coords[1]
 
 		road = [
 			(-extreme_x, road_top, 0),	
@@ -100,9 +99,48 @@ class TY_curb(PropertyGroup):
 	c1_curb_height : FloatProperty(
 		name= "Curb Height",
 		default= 0.5,
-		min= .125
+		min= 0.125
 	)
 
+	def c1_coords(self, extreme_x): # (coords_s, coords_f)
+		
+		scale = 0.3048
+		
+		scene = bpy.context.scene
+		TY_road = scene.TY_road
+
+		curb_height = self.c1_curb_height * scale
+		curb_width = self.c1_curb_width * scale
+		
+		curb_s = [
+			(-(extreme_x + curb_width), curb_height, 0.0),
+			(-extreme_x, curb_height,  0.0)
+		]
+
+		curb_f = [
+			(extreme_x, curb_height, 0.0),
+			(extreme_x + curb_width, curb_height,  0.0)
+		]
+
+		return (curb_s, curb_f)
+
+	c2_option_list = [
+		"c2_curb_angle",
+		"c2_curb_height"	
+	]
+
+	c2_curb_angle : FloatProperty(
+		name= "Curb Angle",
+		default= 45,
+		min= 0,
+		max= 90
+	)
+
+	c2_curb_height : FloatProperty(
+		name= "Curb Height",
+		default = 0.5,
+		min= 0.125,
+	)
 
 class TY_sidewalk(PropertyGroup):
 
